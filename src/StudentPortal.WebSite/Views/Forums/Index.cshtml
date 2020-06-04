@@ -1,0 +1,62 @@
+﻿@model IEnumerable<ForumCategoryViewModel>
+
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h2>Forums</h2>
+
+@foreach (var item in Model)
+{
+    <div class="panel panel-default forum-category">
+        <div class="panel-heading">
+            <strong>@item.Category</strong>
+            @if (User.Identity.IsAuthenticated && User.IsInRole(ApplicationRoles.Administrators))
+            {
+                <span>
+                    | <a asp-action="Edit" asp-controller="ForumCategories" asp-route-id="@item.CategoryId">Edit</a>
+                    | <a asp-action="Delete" asp-controller="ForumCategories" asp-route-id="@item.CategoryId">Delete</a>
+                    | <a asp-action="Create" asp-route-categoryId="@item.CategoryId">Create Forum</a>
+                </span>
+            }
+        </div>
+        <table class="table table-striped">
+            <tbody>
+                @foreach (var forum in item.Forums)
+                {
+                    <tr>
+                        <td>
+                            <a class="forum-name" asp-action="Index" asp-controller="Topics" asp-route-forumId="@forum.Id">@Html.DisplayFor(modelItem => forum.Name)</a>
+                            @if (User.Identity.IsAuthenticated && User.IsInRole(ApplicationRoles.Administrators))
+                            {
+                            <span>
+                                | <a asp-action="Edit" asp-route-id="@forum.Id">Edit</a>
+                                | <a asp-action="Delete" asp-route-id="@forum.Id">Delete</a>
+                            </span>
+                            }
+                            <p>
+                                @Html.DisplayFor(modelItem => forum.Description)
+                            </p>
+                        </td>
+                        <td>
+                        <td style="width: 150px">@forum.Topics Topics</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (User.Identity.IsAuthenticated && User.IsInRole(ApplicationRoles.Administrators))
+{
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <a asp-action="Create" asp-controller="ForumCategories">Create New Category</a>
+        </div>
+    </div>
+
+}

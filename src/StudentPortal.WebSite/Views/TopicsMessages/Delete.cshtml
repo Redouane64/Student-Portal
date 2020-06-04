@@ -1,0 +1,23 @@
+﻿
+@{
+    ViewData["Title"] = "Confirm deletion";
+}
+
+<h2>Confirm Delete</h2>
+
+<h4>Are you sure you want to delete the message?</h4>
+
+<div>
+    <form asp-action="Delete">
+        <input type="hidden" name="@ViewBag.MessageId" />
+        <input type="submit" value="Delete" class="btn btn-default" />
+    </form>
+</div>
+
+<div>
+    <a asp-action="Index" asp-rouet-topicId="@ViewBag.TopicId">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

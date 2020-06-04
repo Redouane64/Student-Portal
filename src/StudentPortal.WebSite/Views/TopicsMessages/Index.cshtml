@@ -1,0 +1,62 @@
+﻿@model IEnumerable<TopicMessageViewModel>
+
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h2>@ViewBag.Topic.Name</h2>
+
+<p>
+    @if (User.Identity.IsAuthenticated)
+    {
+        <a asp-action="Create" asp-controller="TopicsMessages">Reply</a>
+        <span>|</span>
+    }
+    <a asp-action="Index" asp-controller="Topics" asp-route-forumId="@ViewBag.Topic.ForumId">Back to Forum</a>
+</p>
+
+@foreach (var message in Model)
+{
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <div>
+                @message.Creator, @message.Created (edited @message.LastModified)
+                @if (User.Identity.IsAuthenticated && (await AuthorizationService.AuthorizeAsync(User, message.Id, "MessageAuthor")).Succeeded)
+                {
+                    <span>
+                        | <a asp-action="Edit" asp-route-id="@message.Id">Edit</a>
+                        | <a asp-action="Delete" asp-route-id="@message.Id">Delete</a>
+                        | <a asp-action="Attach" asp-route-id="@message.Id">Attach</a>
+                    </span>
+                }
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="forum-message-text">
+                @message.Text
+            </div>
+            <div class="row">
+                @foreach (var attachment in message.Attachments)
+                {
+                    <div class="col-sm-6 col-md-4">
+                        <div class="thumbnail">
+                            <a href="@String.Format("/attachments/{0}", attachment.FileName)" target="__blank">
+                                <img style="width:20%; height: 20%;" src="@String.Format("/attachments/{0}", attachment.FileName)" alt="@attachment.FileName" />
+                            </a>
+                        </div>
+                        <div class="caption">
+                            @if (User.Identity.IsAuthenticated
+                                && (await AuthorizationService.AuthorizeAsync(User, message.Id, "MessageAuthor")).Succeeded)
+                            {
+                                <p><a asp-action="detach" asp-route-messageId="@message.Id" asp-route-attachmentId="@attachment.Id" class="btn btn-sm btn-danger">Delete</a></p>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,56 @@
+﻿@model ForumTopicsViewModel
+
+@inject StudentPortal.WebSite.Data.ApplicationDbContext Context
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h2>@Model.ForumName</h2>
+<p>@Model.ForumDescription</p>
+
+@if (User.Identity.IsAuthenticated)
+{
+
+    <p>
+        <a asp-action="Create" asp-route-forumId="@Model.ForumId">Create new topic</a>
+    </p>
+
+}
+
+<div class="panel panel-default">
+    <table class="table table-striped">
+        @foreach (var topic in Model.Topics)
+        {
+            <tbody>
+                <tr>
+                    <td>
+                        <a asp-action="Index" asp-controller="TopicsMessages" asp-route-topicId="@topic.Id" style="font-size: 1.3em">@topic.Name</a>
+                        @if ((User.Identity.IsAuthenticated && User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value == topic.Creator) || User.IsInRole(ApplicationRoles.Administrators))
+                        {
+                            <span>
+                                | <a asp-action="Edit" asp-route-id="@topic.Id">Edit</a>
+                                | <a asp-action="Delete" asp-route-id="@topic.Id">Delete</a>
+                            </span>
+                        }
+                        <br />
+                        @topic.Creator, @topic.Created
+                    </td>
+                    <td style="width: 100px">
+                        @topic.Replies replies
+                    </td>
+                    <td style="width: 220px">
+                        @{
+                            var latestMessage = await Context.ForumMessages
+                                .Include(m => m.Creator)
+                                .OrderByDescending(m => m.Created)
+                                .FirstOrDefaultAsync(m => m.ForumTopicId == topic.Id);
+                        }
+                        @latestMessage?.Creator.Email<br />
+                        @latestMessage?.Created
+                    </td>
+                </tr>
+            </tbody>
+        }
+    </table>
+</div>
